@@ -7,25 +7,55 @@ FALLBACK_MESSAGE = (
 
 def format_sources(context_chunks):
     """Return source metadata for retrieved context chunks."""
-    # TODO: Return unique source dictionaries.
-    # TODO: Include id, title, category, section, and chunk_id.
-    # TODO: Do not include full text or distance values in source entries.
-    raise NotImplementedError("Implement format_sources().")
+    sources = []
+    seen = set()
+
+    for chunk in context_chunks or []:
+        chunk_id = str(chunk.get("id") or "")
+        source_id = str(chunk.get("source_id") or chunk_id or "")
+
+        if not source_id:
+            continue
+
+        unique_key = (source_id, chunk_id)
+
+        if unique_key in seen:
+            continue
+
+        seen.add(unique_key)
+
+        sources.append(
+            {
+                "id": source_id,
+                "title": chunk.get("title") or "Untitled Source",
+                "category": chunk.get("category") or "Uncategorized",
+                "section": chunk.get("section") or "",
+                "chunk_id": chunk_id,
+            }
+        )
+
+    return sources
 
 
 def format_success_response(answer, sources):
     """Return the successful RAG API response body."""
-    # TODO: Return {"answer": cleaned_answer, "sources": sources_list}.
-    raise NotImplementedError("Implement format_success_response().")
+    return {
+        "answer": str(answer).strip(),
+        "sources": list(sources or []),
+    }
 
 
 def format_fallback_response(question=None):
     """Return a safe response when there is not enough approved context."""
-    # TODO: Return FALLBACK_MESSAGE with an empty sources list.
-    raise NotImplementedError("Implement format_fallback_response().")
+    return {
+        "answer": FALLBACK_MESSAGE,
+        "sources": [],
+    }
 
 
 def format_error_response(error, message):
     """Return a standard error response body."""
-    # TODO: Return {"error": error, "message": message}.
-    raise NotImplementedError("Implement format_error_response().")
+    return {
+        "error": error,
+        "message": message,
+    }
